@@ -1,55 +1,104 @@
 import "./single.scss";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import Chart from "../../components/chart/Chart";
-import List from "../../components/table/Table";
+import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
+import { useEffect, useState } from "react";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
+import { auth, db, storage } from "../../firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-const Single = () => {
+const Single = ({ inputs, route, title }) => {
+  const [file, setFile] = useState("");
+  const [data, setData] = useState({});
+  const [per, setPerc] = useState(null);
+  const navigate = useNavigate()
+  const {id} = useParams();
+  useEffect(async () => {
+    if(id){
+      const docRef = doc(db, route, id);
+const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setData(docSnap.data());
+      } else {
+        // docSnap.data() will be undefined in this case
+        console.log("No such document!");
+      }
+    }
+    
+  }, [id]);
+
+  console.log(data);
+
+  const handleInput = (e) => {
+    const id = e.target.id;
+    const value = e.target.value;
+
+    setData({ ...data, [id]: value });
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    
+    try {
+     
+      await setDoc(doc(db, route, id), {
+        ...data,
+      });
+      navigate(-1)
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
-    <div className="single">
+    <div className="new">
       <Sidebar />
-      <div className="singleContainer">
+      <div className="newContainer">
         <Navbar />
         <div className="top">
-          <div className="left">
-            <div className="editButton">Edit</div>
-            <h1 className="title">Information</h1>
-            <div className="item">
-              <img
-                src="https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260"
-                alt=""
-                className="itemImg"
-              />
-              <div className="details">
-                <h1 className="itemTitle">Jane Doe</h1>
-                <div className="detailItem">
-                  <span className="itemKey">Email:</span>
-                  <span className="itemValue">janedoe@gmail.com</span>
-                </div>
-                <div className="detailItem">
-                  <span className="itemKey">Phone:</span>
-                  <span className="itemValue">+1 2345 67 89</span>
-                </div>
-                <div className="detailItem">
-                  <span className="itemKey">Address:</span>
-                  <span className="itemValue">
-                    Elton St. 234 Garden Yd. NewYork
-                  </span>
-                </div>
-                <div className="detailItem">
-                  <span className="itemKey">Country:</span>
-                  <span className="itemValue">USA</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="right">
-            <Chart aspect={3 / 1} title="User Spending ( Last 6 Months)" />
-          </div>
+          <h1>{title}</h1>
         </div>
         <div className="bottom">
-        <h1 className="title">Last Transactions</h1>
-          <List/>
+
+          <div className="right">
+            <form onSubmit={handleAdd}>
+
+
+               {inputs.map((input) => (
+                <div className="formInput" key={input.id}>
+                  <label>{input.label}</label>
+                  {input.type === "select" ? (
+                    <select defaultValue={data[input.id]} id={input.id} onChange={handleInput}>
+                    <option value="" disabled>Select...</option>
+                    {input.options.map((option) => <option key={option} value={option}>{option}</option>)}
+                    {/* <option value="option1">Option 1</option> */}
+
+                    
+                  </select>
+                  ) : (
+                    <input
+                      id={input.id}
+                      type={input.type}
+                      placeholder={input.placeholder}
+                      onChange={handleInput}
+                      defaultValue={data[input.id]}
+                    />
+                  )}
+                </div>
+              ))}
+              <button disabled={per !== null && per < 100} type="submit">
+                Update {route}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

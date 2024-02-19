@@ -37,3 +37,41 @@ export const userColumns = [
     },
   },
 ];
+
+export const diseaseColumns = [
+  { field: "id", headerName: "ID", width: 70 },
+  {
+    field: "dnumber",
+    headerName: "Disease Number",
+    width: 230,
+  },
+  {
+    field: "dname",
+    headerName: "Disease Name",
+    width: 230,
+  },
+  {
+    field: "dcase",
+    headerName: "Disease Cause",
+    width: 230,
+  },
+];
+
+export const treatmentColumns = [
+  { field: "id", headerName: "ID", width: 70 },
+  {
+    field: "tname",
+    headerName: "Treatment Number",
+    width: 230,
+  },
+  {
+    field: "dname",
+    headerName: "Disease Name",
+    width: 230,
+  },
+  {
+    field: "cause",
+    headerName: "Cause",
+    width: 230,
+  },
+];

@@ -15,11 +15,11 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 
-const New = ({ inputs, title }) => {
+const New = ({ inputs, route, title }) => {
   const [file, setFile] = useState("");
   const [data, setData] = useState({});
   const [per, setPerc] = useState(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const uploadFile = () => {
@@ -71,22 +71,17 @@ const New = ({ inputs, title }) => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
+
     try {
-      const res = await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password
-      );
-      await setDoc(doc(db, "users", res.user.uid), {
+      await addDoc(collection(db, route), {
         ...data,
-        timeStamp: serverTimestamp(),
       });
-      navigate(-1)
+      navigate(-1);
     } catch (err) {
       console.log(err);
     }
   };
-
+console.log("inputs : ", inputs)
   return (
     <div className="new">
       <Sidebar />
@@ -96,24 +91,31 @@ const New = ({ inputs, title }) => {
           <h1>{title}</h1>
         </div>
         <div className="bottom">
-
           <div className="right">
             <form onSubmit={handleAdd}>
-
-
               {inputs.map((input) => (
                 <div className="formInput" key={input.id}>
                   <label>{input.label}</label>
-                  <input
-                    id={input.id}
-                    type={input.type}
-                    placeholder={input.placeholder}
-                    onChange={handleInput}
-                  />
+                  {input.type === "select" ? (
+                    <select id={input.id} onChange={handleInput}>
+                    <option value="" disabled>Select...</option>
+                    {input.options.map((option) => <option key={option} value={option}>{option}</option>)}
+                    {/* <option value="option1">Option 1</option> */}
+
+                    
+                  </select>
+                  ) : (
+                    <input
+                      id={input.id}
+                      type={input.type}
+                      placeholder={input.placeholder}
+                      onChange={handleInput}
+                    />
+                  )}
                 </div>
               ))}
               <button disabled={per !== null && per < 100} type="submit">
-                Add Diseases
+                Add {route}
               </button>
             </form>
           </div>
